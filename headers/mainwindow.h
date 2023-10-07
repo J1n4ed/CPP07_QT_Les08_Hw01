@@ -27,7 +27,8 @@ public slots:
     void ScreenDataFromDB(const QTableWidget *widget, int typeRequest);
     void ReceiveStatusConnectionToDB(bool status);
 
-    void recieve_create_view(QSqlQueryModel * model);
+    void recieve_create_query_view(QSqlQueryModel * model);
+    void recieve_create_table_view(QSqlRelationalTableModel * model);
 
 private slots:
 
@@ -58,7 +59,7 @@ private:
     About * about;
     Dialog * dialog;
     int connectorKey = 0;
-    bool viewKey = false;
+    bool viewKey = false;    
 
     QString request = "SELECT title, release_year, c.name  FROM film f "
                       "JOIN film_category fc on f.film_id = fc.film_id "

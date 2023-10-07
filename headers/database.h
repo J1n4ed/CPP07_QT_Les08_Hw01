@@ -6,7 +6,9 @@
 #include <QSqlError>
 #include <QSqlDatabase>
 #include <QSqlQueryModel>
+#include <QSqlRelationalTableModel>
 #include <QSqlQuery>
+#include <QSqlRecord>
 
 #define POSTGRE_DRIVER "QPSQL"
 #define DB_NAME "MyDB"
@@ -52,7 +54,8 @@ signals:
    void sig_SendDataFromDB(const QTableWidget *tableWg, int typeR);
    void sig_SendStatusConnection(bool);
 
-   void signal_create_view(QSqlQueryModel * model);
+   void signal_create_query_view(QSqlQueryModel * model);
+   void signal_create_table_view(QSqlRelationalTableModel * model);
 
 public slots:
 
@@ -64,6 +67,7 @@ private:
     QSqlDatabase* dataBase;
     QSqlQuery *sqlQuery;
     QSqlQueryModel* sqlModel;
+    QSqlRelationalTableModel* sqlTable;
 
 };
 

@@ -20,7 +20,7 @@ MainWindow::MainWindow(QWidget *parent)
     dataBase = new DataBase(this);
     msg = new QMessageBox(this);
     about = new About(this);
-    dialog = new Dialog(this);
+    dialog = new Dialog(this);    
 
     //Установим размер вектора данных для подключения к БД
     dataForConnect.resize(NUM_DATA_FOR_CONNECT_TO_DB);
@@ -53,7 +53,8 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     connect(this, &MainWindow::signal_make_query, dataBase, &DataBase::recieve_make_query);
-    connect(dataBase, &DataBase::signal_create_view, this, &MainWindow::recieve_create_view);
+    connect(dataBase, &DataBase::signal_create_query_view, this, &MainWindow::recieve_create_query_view);
+    connect(dataBase, &DataBase::signal_create_table_view, this, &MainWindow::recieve_create_table_view);
     connect(this, &MainWindow::signal_clear_query, dataBase, &DataBase::recieve_clear_query);
 }
 
@@ -192,16 +193,42 @@ void MainWindow::ReceiveStatusConnectionToDB(bool status)
     }
 }
 
-void MainWindow::recieve_create_view(QSqlQueryModel *model)
+void MainWindow::recieve_create_query_view(QSqlQueryModel *model)
 {
-    if ( !viewKey )
-    {
-        ui->tb_result->setModel(model);
-        ui->tb_result->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-        viewKey = true;
-    }
+    qDebug() << "DEBUG: in recieve_create_query_view(QSqlQueryModel *model)";
 
+    ui->tb_result->showColumn(0);
+    ui->tb_result->showColumn(1);
+
+    ui->tb_result->setModel(model);
+    ui->tb_result->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->tb_result->update();
+}
+
+void MainWindow::recieve_create_table_view(QSqlRelationalTableModel *model)
+{
+    qDebug() << "DEBUG: in recieve_create_table_view(QSqlTableModel *model)";
+
+    ui->tb_result->setModel(model);
+
+    model->setEditStrategy(QSqlRelationalTableModel::OnManualSubmit);
+    ui->tb_result->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+
+    ui->tb_result->hideColumn(0);
+    ui->tb_result->hideColumn(3);
+    ui->tb_result->hideColumn(4);
+    ui->tb_result->hideColumn(5);
+    ui->tb_result->hideColumn(6);
+    ui->tb_result->hideColumn(7);
+    ui->tb_result->hideColumn(8);
+    ui->tb_result->hideColumn(9);
+    ui->tb_result->hideColumn(10);
+    ui->tb_result->hideColumn(11);
+    ui->tb_result->hideColumn(12);
+    ui->tb_result->hideColumn(13);
+    ui->tb_result->hideColumn(14);
+
+    ui->tb_result->show();
 }
 
 void MainWindow::on_act_about_triggered()

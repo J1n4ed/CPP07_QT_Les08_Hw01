@@ -4,7 +4,7 @@ DataBase::DataBase(QObject *parent)
     : QObject{parent}
 {
     dataBase = new QSqlDatabase();
-    sqlModel = new QSqlQueryModel(this);
+    sqlModel = new QSqlQueryModel(this);    
 }
 
 DataBase::~DataBase()
@@ -61,6 +61,11 @@ void DataBase::recieve_make_query(int type)
 {
     qDebug() << "DEBUG: in recieve_make_query(int type)";
 
+    if (!sqlTable)
+    {
+        sqlTable = new QSqlRelationalTableModel(this, *dataBase);
+    }
+
     if ( dataBase->isOpen() )
     {
         qDebug() << "DEBUG: DB check for open - TRUE";
@@ -68,16 +73,22 @@ void DataBase::recieve_make_query(int type)
         sqlQuery = new QSqlQuery();
         *sqlQuery = QSqlQuery(*dataBase);
 
+        sqlModel->setHeaderData(0, Qt::Horizontal, QObject::tr("Название"));
+        sqlModel->setHeaderData(1, Qt::Horizontal, QObject::tr("Описание"));
+
         switch (type)
         {
         case requestAllFilms:
 
             qDebug() << "DEBUG: Setting model to all films..";
 
-            if (sqlQuery->exec("SELECT title, description FROM film"))
-            {
-                sqlModel->setQuery(std::move(*sqlQuery));
-            }
+            sqlTable->setTable("film");
+            sqlTable->setHeaderData(1, Qt::Horizontal, QObject::tr("Название"));
+            sqlTable->setHeaderData(2, Qt::Horizontal, QObject::tr("Описание"));
+            sqlTable->setSort(0, Qt::AscendingOrder);
+            sqlTable->select();
+
+            emit signal_create_table_view(sqlTable);
 
             break;
         case requestComedy:
@@ -87,6 +98,7 @@ void DataBase::recieve_make_query(int type)
             if (sqlQuery->exec("SELECT title, description FROM film f JOIN film_category fc ON f.film_id = fc.film_id JOIN category c ON c.category_id = fc.category_id WHERE c.name = 'Comedy'"))
             {
                 sqlModel->setQuery(std::move(*sqlQuery));
+                emit signal_create_query_view(sqlModel);
             }
 
             break;
@@ -97,6 +109,7 @@ void DataBase::recieve_make_query(int type)
             if (sqlQuery->exec("SELECT title, description FROM film f JOIN film_category fc ON f.film_id = fc.film_id JOIN category c ON c.category_id = fc.category_id WHERE c.name = 'Horror'"))
             {
                 sqlModel->setQuery(std::move(*sqlQuery));
+                emit signal_create_query_view(sqlModel);
             }
 
             break;
@@ -109,14 +122,6 @@ void DataBase::recieve_make_query(int type)
 
         delete sqlQuery;
 
-        qDebug() << "DEBUG: Setting headers..";
-
-        sqlModel->setHeaderData(0, Qt::Horizontal, QObject::tr("Название"));
-        sqlModel->setHeaderData(1, Qt::Horizontal, QObject::tr("Описание"));
-
-        qDebug() << "DEBUG: Emiting create_view..";
-
-        emit signal_create_view(sqlModel);
     }
     else
     {
@@ -138,7 +143,7 @@ void DataBase::recieve_clear_query()
 
     delete sqlQuery;
 
-    emit signal_create_view(sqlModel);
+    emit signal_create_query_view(sqlModel);
 }
 
 
